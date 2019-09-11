@@ -26,9 +26,36 @@ int scalar_matrix_mult(float scalar_value, struct matrix *matrix){
 o valor do produto da matriz A pela matriz B. O resultado da operação 
 deve ser retornado na matriz C. Em caso de sucesso, a função deve 
 retornar o valor 1. Em caso de erro, a função deve retornar 0. */
-int matrix_matrix_mult(struct matrix *matrixA, struct matrix * matrixB, 
-struct matrix * matrixC){
+int matrix_matrix_mult(struct matrix *matrixA, struct matrix * matrixB, struct matrix * matrixC){
     
+    if (matrixA->width != matrixB->height) {
+        return 0;
+    }
+
+    for (int i = 0; i < matrixA->height; i++) {
+        float *multipliedMatrix = multiplyLineElementsInFirstMatrixWithRowOfSecondMatrix(matrixA, matrixB, i);
+        matrixC->rows[0] = sumAllElementsInVector(multipliedMatrix, matrixA->width);
+    }
+    return 1;
+}
+
+/*
+* Esta Função funciona somente para matrizes de tamanho 8 devido a função '_mm256_mul_ps'
+*/
+float *multiplyLineElementsInFirstMatrixWithRowOfSecondMatrix(struct matrix *firstMatrix, struct matrix *secondMatrix, int lineNumber) {
+    float * currentLine = malloc(sizeof(float) * firstMatrix->width);
+    for (int j = 0; j < firstMatrix->width; j++) {
+        currentLine[j] = firstMatrix->rows[lineNumber];
+    }
+    return _mm256_mul_ps(currentLine, secondMatrix->rows);
+} 
+
+float sumAllElementsInVector(float *vector, int size) {
+    float sum = 0;
+    for (int i = 0; i < size; i++) {
+        sum = sum + vector[i];
+    }
+    return sum;
 }
 
 int main(int argc, char *argv[]) {
