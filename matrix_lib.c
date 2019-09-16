@@ -27,8 +27,7 @@ int scalar_matrix_mult(float scalar_value, struct matrix *matrix){
 o valor do produto da matriz A pela matriz B. O resultado da operação 
 deve ser retornado na matriz C. Em caso de sucesso, a função deve 
 retornar o valor 1. Em caso de erro, a função deve retornar 0. */
-int matrix_matrix_mult(struct matrix *matrixA, struct matrix * matrixB, struct matrix * matrixC){
-
+int matrix_matrix_mult(struct matrix *matrixA, struct matrix * matrixB, struct matrix * matrixC) {
     if (matrixA->width != matrixB->height) {
         return 0;
     }
@@ -45,6 +44,7 @@ int matrix_matrix_mult(struct matrix *matrixA, struct matrix * matrixB, struct m
                 return 0;
             }
 
+            // Populamos os arrays alinhados com os valores corretos
             for(int i = 0, j = 0; j < (matrixB->width * matrixB->height); i++, j+=matrixB->width) {
                 alignedRowMatrixA[i] = matrixA->rows[(matrixCRow*matrixA->width)+i];
                 alignedColunmMatrixB[i] = matrixB->rows[matrixCColunm+j];
@@ -58,7 +58,7 @@ int matrix_matrix_mult(struct matrix *matrixA, struct matrix * matrixB, struct m
                 _mm256_store_ps(multiplicationArray + i, _mm256_mul_ps(matrixALine,matrixBColumn));
             }
 
-            // Soma todos os elementos do array de multiplicação
+            // Soma todos os elementos do array de multiplicação e salva em sua posição correta
             float sum = 0;
             for (int i = 0; i < matrixA->width; i++) {
                 sum += multiplicationArray[i];
