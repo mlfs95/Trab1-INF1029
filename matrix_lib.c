@@ -9,9 +9,15 @@ resultado da operação deve ser retornado na matriz de entrada. Em
 caso de sucesso, a função deve retornar o valor 1. Em caso de erro,
 a função deve retornar 0. */
 int scalar_matrix_mult(float scalar_value, Matrix *matrix){
-    int total = (matrix->height*matrix->width);
-    for (int i = 0; i < total; i++) {
-            matrix->rows[i] = matrix->rows[i]*scalar_value;
+    __m256 linha, result, escalar = _mm256_set1_ps (scalar_value);
+    for (int i = 0; i < matrix->height; i++) {
+        for(int k = 0; k < matrix->width; i+=8) {
+            linha = _mm256_set_ps( matrix->rows[k], matrix->rows[k+1], matrix->rows[k+2], 
+                                    matrix->rows[k+3], matrix->rows[k+4], matrix->rows[k+5], 
+                                    matrix->rows[k+6], matrix->rows[k+7]);
+            result = _mm256_mul_ps (escalar, linha);
+            _mm256_store_ps(matrix->rows + (i*matrix->width) + k, result);
+        }
     }
 }
 
