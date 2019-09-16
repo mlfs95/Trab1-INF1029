@@ -9,29 +9,27 @@ struct matrix {
     float *rows;
 };
 
-void scalar_matrix_mult(float scalar_value, struct matrix *matrix){
+int scalar_matrix_mult(float scalar_value, struct matrix *matrix){
     
     __m256 result, escalar;
     int a = 0, i = 0, k = 0;
-    //float teste[8] ;
-    float *multiplicationArray = (float *)aligned_alloc(32, matrix->width*sizeof(float));
+    float teste = matrix->rows[0];
+    float *resultante = (float *)aligned_alloc(32, matrix->width*sizeof(float));
 
-    escalar = _mm256_set1_ps ((float)scalar_value);
-
-    printf("impressão da matriz original:\n");
+/*  printf("impressão da matriz original:\n");
     for (a=0; a<(matrix->height*matrix->width); a++){
         if(a%8==0){
             printf("\n");
         }
         printf("%.1f ", matrix->rows[a]);
-    }   printf("\nFim da impressao da matriz original.\n\n");   /* OK */
+    }   printf("\nFim da impressao da matriz original.\n\n");*/
 
-/* Impressao do vetor escalar 
-    printf("impressão do vetor escalar: ");
+    escalar = _mm256_set1_ps ((float)scalar_value);
+/*  printf("impressão do vetor escalar: ");
     for (int a=0; a<8; a++){
         printf("%.1f ", escalar[a]);
     }            
-    printf("\nFim da impressao do vetor escalar.\n\n"); VETOR OK*/
+    printf("\nFim da impressao do vetor escalar.\n\n");*/
 
     for (i = 0; i < matrix->height; i++) {
         __m256 linha;
@@ -39,33 +37,31 @@ void scalar_matrix_mult(float scalar_value, struct matrix *matrix){
         linha = _mm256_setr_ps( matrix->rows[k], matrix->rows[k+1], matrix->rows[k+2], 
                                 matrix->rows[k+3], matrix->rows[k+4], matrix->rows[k+5], 
                                 matrix->rows[k+6], matrix->rows[k+7] );
-/* *********************    OK para qualquer linha    ************   */
-        printf("Impressao da linha %d: ", i);
+/*      printf("Impressao da linha %d: ", i);
         for (a=0; a<8; a++){
             printf("%.1f ", linha[a]);
         }
-        printf("\n");
- /********************************************************************** */        
+        printf("\n");*/  
+
         result =  _mm256_mul_ps (escalar, linha);   /* OK */     
-/**************************   OK*   *******************************/          
-        printf("Impressao do vetor result: ");
+/*      printf("Impressao do vetor result: ");
         for (a=0; a<8; a++){
             printf("%.1f ", result[a]);
         }
-        printf("\n"); 
-/****************************************************************** */
-        _mm256_store_ps( (multiplicationArray + k), result);
-       
-        printf("Valor de k: %d\nImpressao do vetor teste: ", k);   
+        printf("\n");*/
+
+        _mm256_store_ps( (resultante + k), result);
+/*      printf("Valor de k: %d\nImpressao do vetor teste: ", k);   
         for (a = 0+k; a<8+k; a++){
-            printf("%.1f ", multiplicationArray[a]);
+            printf("%.1f ", resultante[a]);
         } 
-        printf("\n");
-    
-    }   /* FIM FOR */
-    
-    /* 
-    printf("impressão da matriz final:\n");
+        printf("\n\n");*/    
+
+        for (a = 0+k; a < (8+k); a++){
+            matrix->rows[a] = resultante[a];
+        }
+    }  
+/*  printf("impressão da matriz final:\n");
     for (a=0; a<(matrix->height*matrix->width); a++){
         if(a%8==0){
             printf("\n");
@@ -73,6 +69,7 @@ void scalar_matrix_mult(float scalar_value, struct matrix *matrix){
         printf("%.1f ", matrix->rows[a]);
     }
     printf("\n fim da impressao.\n\n");*/
+    return (teste!=matrix->rows[0]);
 }
 
 
@@ -98,11 +95,12 @@ void main(int argc, char *argv[]) {
     //matrixB.width = 8;
     //matrixB.rows = rowsB;  
     
-    scalar_matrix_mult(10.0f , &matrixA);
-    
-    /* matrix_matrix_mult(&matrixA, &matrixB, &matrixC);
-    
-    printf("%f", matrixC.rows[0]); */
-
-    
+    if(scalar_matrix_mult(10.0f , &matrixA) == 0){
+        printf("Erro: Funcao escalar retornou o valor 0.");
+        exit(1);
+    }
+    else
+        printf("Sucesso."); 
+    /* matrix_matrix_mult(&matrixA, &matrixB, &matrixC);    
+    printf("%f", matrixC.rows[0]); */ 
 }
