@@ -19,28 +19,30 @@ int main_func(int argc, char *argv[]) {
     char *fourthFileName = argv[9];
 
     FILE *firstMatrixFile = fopen(firstFileName, "r");
-    FILE *SecondMatrixFile = fopen(firstFileName, "r");
+    FILE *secondMatrixFile = fopen(secondFileName, "r");
+    FILE *firstResultFile = fopen(thirdFileName, "w");
+    FILE *secondResultFile = fopen(fourthFileName, "w");
     
     Matrix firstMatrix;
     int error = createMatrix(&firstMatrix, firstMatrixHeight, firstMatrixWidth, firstMatrixFile);
     Matrix secondMatrix;
-    error = createMatrix(&secondMatrix, secondMatrixHeight, secondMatrixWidth, SecondMatrixFile);
+    error = createMatrix(&secondMatrix, secondMatrixHeight, secondMatrixWidth, secondMatrixFile);
     
     if (error==0) {
+        printf("\nERRO!! Dimensões da matriz e arquivo não correspondem.\n");
         return;
     }
 
     fclose(firstMatrixFile);
-    fclose(SecondMatrixFile);
+    fclose(secondMatrixFile);
 
-    Matrix firstTaskResultMatrix;
-    scalar_matrix_mult(scalarValue, &firstTaskResultMatrix);
-    // Salvar resultado de firstTaskResultMatrix em FILE(thirdFileName)
+    scalar_matrix_mult(scalarValue, &firstMatrix);
+    writeResultOnFile(&firstMatrix, &firstResultFile);
     
     Matrix secondTaskResultMatrix;
-    matrix_matrix_mult(&firstTaskResultMatrix, &secondMatrix, &secondTaskResultMatrix);
-    // Salvar resultado de secondTaskResultMatrix em FILE(fourthFileName)
-
+    matrix_matrix_mult(&firstMatrix, &secondMatrix, &secondTaskResultMatrix);
+    writeResultOnFile(&secondTaskResultMatrix, &secondResultFile);
+    
     return 1;
 }
 
@@ -52,10 +54,18 @@ int createMatrix(Matrix *matrix, int height, int width, FILE *file) {
     matrix->rows = (float *)malloc(numberOfElements*sizeof(float));
     for (int i = 0; fscanf(file, "%f", number) == 1; i++) {
         if (i == numberOfElements) {
-            printf("\nERRO!! Dimensões da matriz e arquivo não correspondem.\n");
             return 0;
         }
         matrix->rows[i] = number;
     }
     return 1;
+}
+
+int writeResultOnFile(Matrix *matrix, FILE *file) {
+    for (int i = 0; i < matrix->height; i++) {
+        for (int j = 0; j < matrix->width; j++) {
+            fprintf(file, "%f", matrix->rows[(i*secondTaskResultMatrix.width)+j]);
+        }
+    }
+    fclose(file);
 }

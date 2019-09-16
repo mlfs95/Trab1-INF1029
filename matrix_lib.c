@@ -24,6 +24,9 @@ int matrix_matrix_mult(Matrix *matrixA, Matrix *matrixB, Matrix *matrixC) {
         return 0;
     }
 
+    matrixC->height = matrixA->height;
+    matrixC->width = matrixA->width;
+
     for(int matrixCColunm = 0; matrixCColunm < matrixB->width; matrixCColunm++) {
         for(int matrixCRow = 0; matrixCRow < matrixA->height; matrixCRow++) {
             
