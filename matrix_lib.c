@@ -1,22 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <immintrin.h>
-/* 
-height  = número de linhas da matriz (múltiplo de 8)
-width   = número de colunas da matriz (múltiplo de 8)
-rows= sequência de linhas da matriz (height*width elementos) */
-struct matrix {
-unsigned long int height;/* linhas  */
-unsigned long int width; /* colunas */
-float *rows;
-};
+#include "matrix_lib.h"
 
 /* Essa função recebe um valor escalar e uma matriz como argumentos 
 de entrada e calcula o produto do valor escalar pela matriz. O 
 resultado da operação deve ser retornado na matriz de entrada. Em 
 caso de sucesso, a função deve retornar o valor 1. Em caso de erro,
 a função deve retornar 0. */
-int scalar_matrix_mult(float scalar_value, struct matrix *matrix){
+int scalar_matrix_mult(float scalar_value, Matrix *matrix){
     int total = (matrix->height*matrix->width);
     for (int i = 0; i < total; i++) {
             matrix->rows[i] = matrix->rows[i]*scalar_value;
@@ -27,7 +19,7 @@ int scalar_matrix_mult(float scalar_value, struct matrix *matrix){
 o valor do produto da matriz A pela matriz B. O resultado da operação 
 deve ser retornado na matriz C. Em caso de sucesso, a função deve 
 retornar o valor 1. Em caso de erro, a função deve retornar 0. */
-int matrix_matrix_mult(struct matrix *matrixA, struct matrix * matrixB, struct matrix * matrixC) {
+int matrix_matrix_mult(Matrix *matrixA, Matrix *matrixB, Matrix *matrixC) {
     if (matrixA->width != matrixB->height) {
         return 0;
     }
@@ -66,7 +58,6 @@ int matrix_matrix_mult(struct matrix *matrixA, struct matrix * matrixB, struct m
             matrixC->rows[(matrixCRow*matrixA->height)+matrixCColunm] = sum;
         }
     }
-
     return 1;
 }
 
@@ -77,9 +68,9 @@ int main(int argc, char *argv[]) {
         rowsA[i] = i+1;
         rowsB[i] = i+1;
     }
-    struct matrix matrixA;
-    struct matrix matrixB;
-    struct matrix matrixC;
+    Matrix matrixA;
+    Matrix matrixB;
+    Matrix matrixC;
 
     matrixA.height = 8;
     matrixA.width = 16;
@@ -94,4 +85,4 @@ int main(int argc, char *argv[]) {
     printf("matrixC - row[0] = %f", matrixC.rows[0]);
 
     return 0;
- }
+}
