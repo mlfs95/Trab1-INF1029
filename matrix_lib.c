@@ -21,33 +21,30 @@ deve ser retornado na matriz C. Em caso de sucesso, a função deve
 retornar o valor 1. Em caso de erro, a função deve retornar 0. */
 int matrix_matrix_mult(Matrix *matrixA, Matrix *matrixB, Matrix *matrixC) {
     if (matrixA->width != matrixB->height) {
+        printf("Matrizes incompatíveis!");
         return 0;
     }
 
-    for(int matrixCColunm = 0; matrixCColunm < matrixB->width; matrixCColunm++) {
+    float *multiplicationArray = (float *)aligned_alloc(32, matrixA->width*sizeof(float));
+    if (multiplicationArray == NULL) {
+        printf("vector allocation problem\n");
+        return 0;
+    }
+
+    for(int matrixCColumn = 0; matrixCColumn < matrixB->width; matrixCColumn++) {
         for(int matrixCRow = 0; matrixCRow < matrixA->height; matrixCRow++) {
-            
-            float *alignedRowMatrixA = (float *)aligned_alloc(32, matrixA->width*sizeof(float));
-            float *alignedColunmMatrixB = (float *)aligned_alloc(32, matrixA->width*sizeof(float));
-            float *multiplicationArray = (float *)aligned_alloc(32, matrixA->width*sizeof(float));
-
-            if ((alignedRowMatrixA == NULL) || (alignedColunmMatrixB == NULL) || (multiplicationArray == NULL)) {
-                printf("vector allocation problem\n");
-                return 0;
-            }
-
-            // Populamos os arrays alinhados com os valores corretos
-            for(int i = 0, j = 0; j < (matrixB->width * matrixB->height); i++, j+=matrixB->width) {
-                alignedRowMatrixA[i] = matrixA->rows[(matrixCRow*matrixA->width)+i];
-                alignedColunmMatrixB[i] = matrixB->rows[matrixCColunm+j];
-            }
             
             // De 8 em 8 vamos adicionando coisas no array de multiplicação
             for (int i = 0; i < matrixA->width; i+=8) {
-                __m256 matrixALine = _mm256_load_ps(alignedRowMatrixA + i);
-                __m256 matrixBColumn = _mm256_load_ps(alignedColunmMatrixB + i);
-                
-                _mm256_store_ps(multiplicationArray + i, _mm256_mul_ps(matrixALine,matrixBColumn));
+                __m256 matrixALine = _mm256_set_ps(matrixA->rows[matrixCRow*matrixA->width], matrixA->rows[(matrixCRow*matrixA->width)+1],
+                                                     matrixA->rows[(matrixCRow*matrixA->width)+2], matrixA->rows[(matrixCRow*matrixA->width)+3],
+                                                     matrixA->rows[(matrixCRow*matrixA->width)+4], matrixA->rows[(matrixCRow*matrixA->width)+5],
+                                                     matrixA->rows[(matrixCRow*matrixA->width)+6], matrixA->rows[(matrixCRow*matrixA->width)+7]);
+                __m256 matrixBColumn = _mm256_set_ps(matrixB->rows[(i*matrixB->width)+matrixCColumn], matrixB->rows[((i+1)*matrixB->width)+matrixCColumn],
+                                                        matrixB->rows[((i+2)*matrixB->width)+matrixCColumn], matrixB->rows[((i+3)*matrixB->width)+matrixCColumn],
+                                                        matrixB->rows[((i+4)*matrixB->width)+matrixCColumn], matrixB->rows[((i+5)*matrixB->width)+matrixCColumn],
+                                                        matrixB->rows[((i+6)*matrixB->width)+matrixCColumn], matrixB->rows[((i+7)*matrixB->width)+matrixCColumn]);
+                _mm256_store_ps(multiplicationArray + i, _mm256_mul_ps(matrixALine, matrixBColumn));
             }
 
             // Soma todos os elementos do array de multiplicação e salva em sua posição correta
@@ -55,7 +52,7 @@ int matrix_matrix_mult(Matrix *matrixA, Matrix *matrixB, Matrix *matrixC) {
             for (int i = 0; i < matrixA->width; i++) {
                 sum += multiplicationArray[i];
             }
-            matrixC->rows[(matrixCRow*matrixA->height)+matrixCColunm] = sum;
+            matrixC->rows[(matrixCRow*matrixA->height)+matrixCColumn] = sum;
         }
     }
     return 1;
